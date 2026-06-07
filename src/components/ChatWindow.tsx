@@ -21,6 +21,22 @@ export function ChatWindow({
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const messageSetterRef = useRef<
+    ((val: string, caretAtEnd?: boolean) => void) | null
+  >(null);
+
+  useEffect(() => {
+    function onReply(e: Event) {
+      const ev = e as CustomEvent;
+      const text = ev?.detail?.text || "";
+      if (messageSetterRef.current) {
+        messageSetterRef.current(text, true);
+      }
+    }
+    window.addEventListener("anongroups:reply", onReply as EventListener);
+    return () =>
+      window.removeEventListener("anongroups:reply", onReply as EventListener);
+  }, []);
 
   const handleMessage = useCallback((message: MessageDto) => {
     setMessages((current) => {
@@ -112,6 +128,7 @@ export function ChatWindow({
         disabled={status !== "connected"}
         onSend={onSend}
         candidates={usernames}
+        registerTextSetter={(s) => (messageSetterRef.current = s)}
       />
     </section>
   );

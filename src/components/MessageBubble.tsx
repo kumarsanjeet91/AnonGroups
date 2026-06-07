@@ -11,16 +11,30 @@ export function MessageBubble({
   const username = message.username || "anon";
   const colors = getUserColor(username);
   const date = new Date(message.createdAt);
-  // Use UTC-based deterministic formatting to avoid hydration mismatches
+  // Use deterministic IST-based formatting to avoid hydration mismatches
   const pad = (n: number) => n.toString().padStart(2, "0");
-  const hours = date.getUTCHours();
-  const minutes = date.getUTCMinutes();
-  const timeLabel = `${pad(hours)}:${pad(minutes)} UTC`;
+  // convert to IST (UTC + 5:30)
+  const totalMinutes =
+    date.getUTCHours() * 60 + date.getUTCMinutes() + 5 * 60 + 30;
+  const istHours = Math.floor((totalMinutes / 60) % 24);
+  const istMinutes = totalMinutes % 60;
+  const timeLabel = `${pad(istHours)}:${pad(istMinutes)} IST`;
+
+  function handleReply() {
+    // Dispatch custom event so MessageInput can register and set text
+    window.dispatchEvent(
+      new CustomEvent("anongroups:reply", { detail: { text: `@${username} ` } })
+    );
+  }
+
+  function handleCopy() {
+    navigator.clipboard?.writeText(message.text || "");
+  }
 
   return (
     <div
       className={`group flex animate-[fadeIn_160ms_ease-out] gap-3 rounded-md px-2 py-2 transition hover:bg-slate-200/55 dark:hover:bg-white/[0.04] ${
-        mine ? "flex-row-reverse sm:pr-12" : "sm:pl-12"
+        mine ? "flex-row-reverse sm:pr-12 pr-6" : "sm:pl-12 pl-4"
       }`}
     >
       <div
@@ -54,11 +68,13 @@ export function MessageBubble({
           )}
         </div>
 
-        <div className="mt-1 flex items-start gap-2">
+        <div
+          className={`mt-1 flex ${mine ? "items-end" : "items-start"} gap-2`}
+        >
           <p
             className={`max-w-[85%] whitespace-pre-wrap break-words rounded-md px-3 py-2 text-sm leading-relaxed shadow-sm sm:max-w-[900px] ${
               mine
-                ? "border-transparent bg-violet-600 text-white dark:bg-violet-500"
+                ? "ml-auto max-w-[75%] border-transparent bg-violet-600 text-white dark:bg-violet-500"
                 : "border border-slate-200 bg-white text-slate-800 dark:border-white/[0.08] dark:bg-[#1E293B] dark:text-[#F8FAFC]"
             }`}
           >
@@ -67,6 +83,7 @@ export function MessageBubble({
           <div className="flex translate-y-1 gap-1 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100">
             <button
               type="button"
+              onClick={handleReply}
               className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-500 shadow-sm transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-violet-500/40 dark:border-white/10 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
               aria-label="Reply"
               title="Reply"
@@ -75,6 +92,7 @@ export function MessageBubble({
             </button>
             <button
               type="button"
+              onClick={handleCopy}
               className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-500 shadow-sm transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-violet-500/40 dark:border-white/10 dark:bg-slate-800 dark:text-slate-300 dark:hover:text-white"
               aria-label="Copy"
               title="Copy"

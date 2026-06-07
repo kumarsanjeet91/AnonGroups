@@ -27,8 +27,8 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 shadow-sm backdrop-blur dark:border-white/[0.08] dark:bg-[#0F172A]/95">
-      <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 sm:px-4">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="grid h-16 grid-cols-[auto_1fr_auto] items-center gap-3 px-3 sm:px-4">
+        <div className="col-start-1 flex min-w-0 items-center gap-2">
           {showMobileMenu && (
             <button
               type="button"
@@ -39,11 +39,7 @@ export function Navbar({
               =
             </button>
           )}
-          {showMobileMenu && centerLabel && (
-            <span className="min-w-0 truncate text-base font-black text-slate-950 dark:text-slate-50 md:hidden">
-              {centerLabel}
-            </span>
-          )}
+
           <Link
             href="/groups"
             className={`truncate text-lg font-black tracking-normal text-slate-950 dark:text-slate-50 sm:text-xl ${
@@ -54,13 +50,22 @@ export function Navbar({
           </Link>
         </div>
 
-        <div className="hidden min-w-0 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700 shadow-sm dark:border-white/[0.08] dark:bg-[#111827] dark:text-slate-100 sm:block">
+        <div className="col-start-2 hidden min-w-0 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700 shadow-sm dark:border-white/[0.08] dark:bg-[#111827] dark:text-slate-100 sm:block">
           <span className="block max-w-[34vw] truncate">
             {centerLabel || "Public Groups"}
           </span>
         </div>
 
-        <div className="flex min-w-0 items-center justify-end gap-2">
+        {/* mobile center label (placed in middle grid column so right-side controls aren't pushed) */}
+        {showMobileMenu && centerLabel && (
+          <div className="md:hidden col-start-2 text-center">
+            <span className="min-w-0 truncate text-base font-black text-slate-950 dark:text-slate-50">
+              {centerLabel}
+            </span>
+          </div>
+        )}
+
+        <div className="col-start-3 flex min-w-0 items-center justify-end gap-2">
           {connectionStatus && (
             <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold capitalize text-slate-600 dark:border-white/[0.08] dark:bg-[#111827] dark:text-[#94A3B8] lg:flex">
               <span

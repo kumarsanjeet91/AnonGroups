@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/anongroups";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
+  throw new Error('MONGODB_URI is required in production environment');
+}
+
+const effectiveUri = MONGODB_URI || 'mongodb://127.0.0.1:27017/anongroups';
 
 type CachedConnection = {
   conn: typeof mongoose | null;
@@ -18,7 +24,7 @@ export async function connectToDatabase() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(effectiveUri, {
       bufferCommands: false
     });
   }

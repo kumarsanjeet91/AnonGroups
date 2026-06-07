@@ -13,10 +13,14 @@ export function MessageInput({
   disabled,
   onSend,
   candidates,
+  registerTextSetter,
 }: {
   disabled?: boolean;
   onSend: (text: string) => Promise<string | null>;
   candidates?: string[];
+  registerTextSetter?: (
+    setter: (val: string, caretAtEnd?: boolean) => void
+  ) => void;
 }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
@@ -161,6 +165,23 @@ export function MessageInput({
       setCaret(pos);
     }, 0);
   }
+
+  useEffect(() => {
+    if (!registerTextSetter) return;
+    registerTextSetter((val: string, caretAtEnd = true) => {
+      const newText = val.slice(0, 500);
+      setText(newText);
+      setTimeout(() => {
+        if (!textareaRef.current) return;
+        const pos = caretAtEnd ? newText.length : Math.min(newText.length, 0);
+        textareaRef.current.selectionStart = textareaRef.current.selectionEnd =
+          pos;
+        textareaRef.current.focus();
+        resizeTextarea(textareaRef.current);
+        setCaret(pos);
+      }, 0);
+    });
+  }, [registerTextSetter]);
 
   return (
     <form
